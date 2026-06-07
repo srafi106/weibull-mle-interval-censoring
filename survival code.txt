@@ -1,0 +1,79 @@
+data =read.table(file.choose(),head=T) #for choosing the data from my stored 
+location
+library(survival)
+data2 = Surv(time=data$left, time2=data$right, event=data$event, 
+             type="interval")
+weibullmle(data$left,data$right,0.5,6)
+km = survfit(data2~1,conf.type='plain')
+summary(km)
+par_surv =1- pweibull(seq(0,150,0.05), shape= 2.004489, scale = 62.71555)
+#2.004489 and 62.71555 are the values of MLE of the parameters we got from 
+the weibullmle function 
+x = seq(0,150,0.05)
+plot(x,par_surv,type='l',col='red',ylab='Survival Function',main='Comparison 
+of parametric and non parametric survivor functions', sub='red = parametric 
+survival function, black= non-parametric survival function ')
+lines(km)
+plot(km$surv,pweibull(q=km$time, shape= 2.004489, scale = 62.71555, 
+                      lower.tail=FALSE),main="Weibull P-P Plot (No Adjustment)", xlab="Empirical 
+Probability", ylab="Theoretical Probability")
+lines(c(0,1),c(0,1),lty=3)
+sort(data$right) #To observe the highest value which is not Inf of right 
+column of data 
+time = ifelse(data$right<100,data$right,data$left) #The value was 98 so to be 
+safe used 100
+event = ifelse(data$event==3,1,0)
+data3 = Surv(time, event, type="right") #recoded the data 
+data3
+km2 = survfit(data3~1,conf.type='plain')
+plot(km2,conf.int=F,main='Comparison of non-parametric survivor functions in 
+both cases', sub=' red line = considering interval censoring, black line = 
+considering right censoring')
+lines(km,conf.int=F,lty=3,col='red')
+right = ifelse(data$right==Inf, data$left,data$right) #recoded the right 
+column of the data to make a right censored 
+weibullmle(data$left,right,0.5,6)
+par_surv1 =1- pweibull(seq(0,150,0.05),shape=1.971164, scale=50.36445)
+#1.971164 and 50.36445 are the values of MLE of the parameters we got from the 
+weibullmle function
+x1 = seq(0,150,0.05)
+plot(x1,par_surv1,type='l',col='red',ylab='Survival 
+Function',main='Comparison of two parametric survivor functions', sub='red 
+=new parametric survival function, black= old parametric survival function ')
+lines(x1,par_surv)
+######
+#with a portion of the data
+data = data[1:25,]
+data2 = Surv(time=data$left, time2=data$right, event=data$event,
+             type="interval")
+weibullmle(data$left,data$right,0.5,6)
+km = survfit(data2~1,conf.type='plain')
+par_surv =1- pweibull(seq(0,150,0.05), shape= 2.004489, scale = 62.71555)
+x = seq(0,150,0.05)
+plot(x,par_surv,type='l',col='red',ylab='Survival Function',main='Comparison 
+of parametric and non parametric survivor functions', sub='red = parametric 
+survival function, black= non-parametric survival function ')
+lines(km)
+##
+plot(km$surv,pweibull(q=km$time, shape= 2.004489, scale = 62.71555, 
+                      lower.tail=FALSE),main="Weibull P-P Plot (No Adjustment)", xlab="Empirical 
+Probability", ylab="Theoretical Probability")
+lines(c(0,1),c(0,1),lty=3)
+##
+sort(data$right)
+time = ifelse(data$right<100,data$right,data$left)
+event = ifelse(data$event==3,1,0)
+data3 = Surv(time, event, type="right")
+data3
+km2 = survfit(data3~1,conf.type='plain')
+plot(km2,conf.int=F)
+lines(km,conf.int=F,lty=3,col='red')
+right = ifelse(data$right==Inf, data$left,data$right)
+weibullmle(data$left,right,0.5,6)
+par_surv1 =1- pweibull(seq(0,150,0.05),shape=3.06551, scale=45.09824)
+x1 = seq(0,150,0.05)
+plot(x1,par_surv1,type='l',col='red',ylab='Survival 
+Function',main='Comparison of parametric and non parametric survivor 
+functions', sub='red = parametric survival function, black= non-parametric 
+survival function ')
+lines(km2)

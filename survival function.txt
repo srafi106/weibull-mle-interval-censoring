@@ -1,0 +1,54 @@
+fweibloglike = function(parms, left, right)
+{
+  # No error checking!
+  # Return the value of the Weibull log-likelihood function for the given shape and scale values.
+  # parms is a vector where parms[1] = shape parameter, parms[2] = scale parameter.
+  # left is vector of lower limits of the intervals.
+  # right is vector of upper limits of the intervals.
+  # 4 cases are possible:
+  # left[i] = right[i] - Exact failure time observed.
+  # 0 < left[i] < right[i] < Inf - Interval censored.
+  # left[i] = 0 < right[i] - Left censored.
+  # left[i] < right[i] = Inf - Right censored.
+
+  shape = parms[1]
+  scale = parms[2]
+  if ((shape <= 0) | (scale <= 0))
+  {
+    ans = -Inf
+  }
+  else
+  {
+    currtot = 0
+    for (i in 1:length(left))
+    {
+      if (left[i] == right[i])
+      {
+        currtot = currtot + log(dweibull(left[i],shape,scale))
+      }
+      else
+      {
+        currtot = currtot + log(pweibull(right[i],shape,scale)-pweibull(left[i],shape,scale))
+      }
+    }
+    ans = currtot
+  }
+  return(ans)
+}
+
+weibullmle = function(left, right, shape0, scale0)
+{
+  # No error checking!
+  # Wrapper function to use optim to directly maximize the Weibull log likelihood function for generally
+  # censored data.
+  # left is vector of lower limits of the intervals.
+  # right is vector of upper limits of the intervals.
+  # 4 cases are possible:
+  # left[i] = right[i] - Exact failure time observed.
+  # 0 < left[i] < right[i] < Inf - Interval censored.
+  # left[i] = 0 < right[i] - Left censored.
+  # left[i] < right[i] = Inf - Right censored.
+  cat("If weibulmle returns an error, then try a different combination of starting parameters shape0, scale0.\n")
+  ans = optim(par=c(shape0,scale0), fweibloglike, method="Nelder-Mead", control=list(fnscale=-1), left=left, right=right)
+  return(data.frame(shapemle = ans$par[1], scalemle = ans$par[2]))
+}
